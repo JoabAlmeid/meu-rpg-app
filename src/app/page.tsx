@@ -88,8 +88,8 @@ export default function Home() {
         }),
       });
 
-      const errorText = await response.text();
-      console.log("📨 Response body:", errorText);
+      console.log("📨 Response status:", response.status);
+      console.log("📨 Response ok?", response.ok);
 
       if (!response.ok) {
         //se falha, lê como text. correção  por que não posso fazer response.json duas vezes
@@ -98,7 +98,7 @@ export default function Home() {
       }
 
       //se sucesso, ler como JSON. aqui repetiria uma segunda vez
-      const data = await response.json();
+      const data = await response.json(); // Ler APENAS se sucesso
       console.log("✅ Rolagem salva no banco:", data._id);
     } catch (error) {
       console.warn("⚠️ Não foi possível salvar no banco:", error);
