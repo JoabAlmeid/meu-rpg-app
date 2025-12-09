@@ -1,6 +1,7 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 export default function Home() {
   const [resultado, setResultado] = useState<number[]>([]);
@@ -33,7 +34,17 @@ export default function Home() {
     }
   }
 
-  function RolarDados() {
+  async function RolarDados() {
+    console.log("=== NOVA ROLAGEM ===");
+
+    // 1. Log estados atuais
+    console.log("Estado atual - quantidadeDados:", quantidadeDados);
+    console.log("Estado atual - lados:", lados);
+    console.log("Estado atual - resultado:", resultado);
+    console.log("Estado atual - total:", total);
+
+    //-----------------------------------------------
+
     const resultados: number[] = [];
 
     for (let i = 0; i < quantidadeDados; i++) {
@@ -60,7 +71,81 @@ export default function Home() {
       const novoHistorico = [novoItemHistorico, ...prev]; //novo item no topo da pilha
       return novoHistorico.slice(0, 10); //apenas 10 itens no array
     });
+
+    //salvar no banco (try-catch para não quebrar se falhar)
+    try {
+      if (soma < 1) {
+        console.error("Erro: soma não pode ser 0");
+        return;
+      }
+      const response = await fetch("/api/rolls/save", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          dados: `${quantidadeDados}d${lados}`,
+          resultados,
+          total: soma,
+        }),
+      });
+
+      const errorText = await response.text();
+      console.log("📨 Response body:", errorText);
+
+      if (!response.ok) {
+        //se falha, lê como text. correção  por que não posso fazer response.json duas vezes
+        const errorText = await response.text();
+        throw new Error(`HTTP ${response.status}: ${errorText}`);
+      }
+
+      //se sucesso, ler como JSON. aqui repetiria uma segunda vez
+      const data = await response.json();
+      console.log("✅ Rolagem salva no banco:", data._id);
+    } catch (error) {
+      console.warn("⚠️ Não foi possível salvar no banco:", error);
+    }
   }
+
+  useEffect(() => {
+    const carregarHistorico = async () => {
+      try {
+        const response = await fetch("/api/rolls/history");
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+        const data = await response.json();
+        const rolamentos = data.rolamentos;
+
+        console.log("📦 Dados recebidos do banco:", data.rolamentos);
+
+        // Converter formato aqui
+
+        const convertedHistory = rolamentos.map(
+          (roll: {
+            _id: { toString: () => any };
+            dados: any;
+            resultados: any;
+            total: any;
+            createdAt: string | number | Date;
+          }) => {
+            return {
+              id: roll._id.toString(), // Qual campo usar?
+              dados: roll.dados,
+              resultados: roll.resultados,
+              total: roll.total,
+              data: new Date(roll.createdAt), // Qual campo tem a data?
+            };
+          }
+        );
+
+        setHistorico(convertedHistory);
+        console.log("✅ Histórico carregado do banco!");
+      } catch (error) {
+        console.warn("⚠️ Não foi possível carregar do banco:", error);
+        // Mantém histórico vazio ou local
+      }
+    };
+
+    carregarHistorico();
+  }, []);
 
   function limparHistorico() {
     //define o histórico como um array vazio
