@@ -8,6 +8,8 @@ export default function Home() {
   const [total, setTotal] = useState<number>(0);
   const [lados, setLados] = useState(6);
   const [quantidadeDados, setQuantidadeDados] = useState(1);
+  const [limpando, setLimpando] = useState(false);
+  const [carregandoHistorico, setCarregandoHistorico] = useState(true);
   const [historico, setHistorico] = useState<
     Array<{
       id: number; // Para key no React
@@ -37,7 +39,7 @@ export default function Home() {
   async function RolarDados() {
     console.log("=== NOVA ROLAGEM ===");
 
-    // 1. Log estados atuais
+    //log estados atuais
     console.log("Estado atual - quantidadeDados:", quantidadeDados);
     console.log("Estado atual - lados:", lados);
     console.log("Estado atual - resultado:", resultado);
@@ -107,6 +109,7 @@ export default function Home() {
 
   useEffect(() => {
     const carregarHistorico = async () => {
+      setCarregandoHistorico(true);
       try {
         const response = await fetch("/api/rolls/history");
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
@@ -138,18 +141,53 @@ export default function Home() {
 
         setHistorico(convertedHistory);
         console.log("✅ Histórico carregado do banco!");
+        setCarregandoHistorico(false);
       } catch (error) {
         console.warn("⚠️ Não foi possível carregar do banco:", error);
-        // Mantém histórico vazio ou local
+        //mantém histórico vazio ou local
+        setCarregandoHistorico(false);
+      } finally {
+        setCarregandoHistorico(false); //termina loading (sempre executa)
       }
     };
 
     carregarHistorico();
   }, []);
 
-  function limparHistorico() {
-    //define o histórico como um array vazio
-    setHistorico([]);
+  async function limparHistorico() {
+    const confirmar = window.confirm(
+      "Tem certeza que quer apagar TODAS as rolagens?\nIsso removerá do banco de dados também."
+    );
+    if (!confirmar) return;
+
+    setLimpando(true);
+
+    try {
+      //1) chama api. Não precisa de header pois estamos enviando nada
+      const response = await fetch("/api/rolls/clear", {
+        method: "DELETE",
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
+
+      const result = await response.json();
+      console.log("✅ Banco limpo:", result.message);
+
+      //2) limpa o frontend também
+      setHistorico([]);
+
+      //3) feedback se funcionou
+      alert(`✅ ${result.message}`);
+      setLimpando(false);
+    } catch (error) {
+      console.error("❌ Falha ao limpar banco:", error);
+      alert(
+        "⚠️ Falha ao limpar banco de dados.\nO histórico local foi mantido."
+      );
+      setLimpando(false);
+    }
   }
 
   function rolarRapido(quantidadeDados: number, lados: number) {
@@ -162,7 +200,6 @@ export default function Home() {
   return (
     <div>
       <h1>Rolamento de Dados</h1>
-
       <div>
         <label>Quantidade de dados: </label>
         <input
@@ -173,7 +210,6 @@ export default function Home() {
           max="10"
         />
       </div>
-
       <div>
         <label>Lados do dado: </label>
         <input
@@ -184,10 +220,8 @@ export default function Home() {
           max="100"
         />
       </div>
-
       <button onClick={RolarDados}>Rolar Dados</button>
       <button onClick={() => rolarRapido(2, 6)}>Rolar 2d6</button>
-
       <div>
         <p>
           {resultado.length > 0
@@ -199,20 +233,31 @@ export default function Home() {
         </p>
         <div>
           <h2>Histórico (últimas 10 rolagens)</h2>
-          {historico.length === 0 ? (
-            <p>Nenhuma rolagem ainda</p>
+          {carregandoHistorico ? (
+            //if estado carregando
+            <div>
+              <p>Carregando histórico do banco...</p>
+            </div>
+          ) : historico.length === 0 ? (
+            // else if estado vazio
+            <p>Nenhuma rolagem ainda. Role alguns dados!</p>
           ) : (
+            //else if há histórico
             <ul>
               {historico.map((item) => (
                 <li key={item.id}>
-                  [{item.data.toLocaleTimeString().slice(0, 5)}] {/* Hora */}
-                  {item.dados} = {item.total}({item.resultados.join(" + ")})
+                  [{item.data.toLocaleTimeString().slice(0, 5)}]{item.dados} ={" "}
+                  {item.total}({item.resultados.join(" + ")})
                 </li>
               ))}
             </ul>
           )}
-          <button onClick={limparHistorico} disabled={historico.length === 0}>
-            Limpar Histórico
+
+          <button
+            onClick={limparHistorico}
+            disabled={historico.length === 0 || limpando}
+          >
+            {limpando ? "Limpando..." : "Limpar Histórico"}
           </button>
         </div>
       </div>
