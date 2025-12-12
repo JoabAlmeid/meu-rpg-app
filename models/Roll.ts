@@ -2,6 +2,11 @@ import mongoose, { Schema, models } from "mongoose";
 
 const RolamentoSchema = new Schema(
   {
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: false,
+    },
     dados: {
       type: String,
       required: true,
