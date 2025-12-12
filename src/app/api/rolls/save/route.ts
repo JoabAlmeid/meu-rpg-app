@@ -44,13 +44,15 @@ export async function POST(request: Request) {
         );
       }
 
-      const userExists = await User.findById(userId);
-      if (!userExists) {
-        return NextResponse.json(
-          { error: "Usuário não encontrado" },
-          { status: 400 }
-        );
-      }
+      //DESABILITANDO TEMPORARIAMENTE. Quando tiver como criar usuário isso aqui volta
+      // const userExists = await User.findById(userId);
+      // if (!userExists) {
+      //   return NextResponse.json(
+      //     { error: "Usuário não encontrado" },
+      //     { status: 400 }
+      //   );
+      // }
+
       //passando pelos testes, o validUserId que era null recebe o ID que é passado pelo POST
       //validUserId recebe type: mongoose.Schema.Types.ObjectId, variável do próprio mongoDB
       validUserId = userId;
