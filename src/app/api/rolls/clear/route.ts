@@ -1,27 +1,59 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import dbConnect from "@/lib/connectMongo";
 import Rolamento from "../../../../../models/Roll";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
-export async function DELETE() {
+export async function DELETE(request: NextRequest) {
   try {
-    //1) conectar
+    //    //1) pegar o userId do JWT token (não da query)
+    // const userId = getUserIdFromToken(request);
+
+    // //2) só pode deletar SEUS rolamentos
+    // const filter = { userId };
+
+    // //3) se ficar sem userId ele iria deletar tudo, isso aqui impede
+    // if (!userId) {
+    //   return NextResponse.json(
+    //     { error: "Não autorizado" },
+    //     { status: 401 }
+    //   );
+
+    //   //--------------- código acima para quando tiver JWT ---------------//
+
+    //1) pega os parâmetros na URL (mais RESTful que pegar do body)
+    const searchParams = request.nextUrl.searchParams;
+    const userId = searchParams.get("userId");
+
+    const filter: any = {};
+
+    if (userId) {
+      //validar se é ObjectId válido
+      if (/^[0-9a-fA-F]{24}$/.test(userId)) {
+        filter.userId = userId;
+      } else {
+        return NextResponse.json(
+          { error: "ID de usuário inválido" },
+          { status: 400 }
+        );
+      }
+    }
+
+    console.log("📋 Filtro aplicado em DELETE:", filter);
+
+    //2) conecta no mongodb
     await dbConnect();
 
-    //2) deletar, o objeto vazio faz deletar tudo o que achar usando o model Rolamento
-    const result = await Rolamento.deleteMany({});
+    //3) deleta todos os rolamentos com esse userId. Se tiver vazio, deleta tudo
+    const result = await Rolamento.deleteMany(filter);
 
-    //3) devolver response de sucesso. NECESSÁRIO SENÃO NÃO FUNCIONA
     return NextResponse.json({
       success: true,
-      message: `Histórico limpo! ${result.deletedCount} rolagens removidas.`,
+      message: `Histórico sofreu filtragem! ${result.deletedCount} rolagens removidas.`,
       deletedCount: result.deletedCount,
     });
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     console.error("❌ Erro ao limpar histórico:", error);
 
-    //4) devolve responde de erro caso tenha
     return NextResponse.json(
       {
         success: false,
