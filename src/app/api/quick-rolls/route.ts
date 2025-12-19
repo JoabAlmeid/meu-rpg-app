@@ -2,49 +2,115 @@
 import dbConnect from "@/lib/connectMongo";
 import { NextRequest, NextResponse } from "next/server";
 import QuickRoll from "../../../../models/QuickRoll";
-import mongoose from "mongoose";
+import mongoose, { SortOrder } from "mongoose";
 
 export async function GET(request: NextRequest) {
   try {
     //puxa da URL o ID, exemplo: localhost/api/rolls/history?userId=507f1f77bcf86cd799439011
     const searchParams = request.nextUrl.searchParams;
     const userId = searchParams.get("userId");
+    const category = searchParams.get("category");
+    const limitParam = searchParams.get("limit");
+    const sortParam = searchParams.get("sort") || "order";
 
-    console.log("🔍 Query parameters:", {
-      fullQuery: request.nextUrl.search,
-    });
+    if (!userId) {
+      return NextResponse.json(
+        { error: "userId é obrigatório na query string" },
+        { status: 400 }
+      );
+    }
 
     const filter: any = {};
 
-    if (userId) {
-      //validar se é ObjectId válido
-      if (/^[0-9a-fA-F]{24}$/.test(userId)) {
-        filter.userId = userId;
+    //valida o userId e converde para ObjectId, que nem no POST. Senão, manda um array vazio
+    if (/^[0-9a-fA-F]{24}$/.test(userId)) {
+      filter.userId = new mongoose.Types.ObjectId(userId);
+    } else {
+      // userId inválido → retornar array vazio (não erro)
+      return NextResponse.json({
+        success: true,
+        data: [],
+        count: 0,
+        filters: {
+          userId,
+          category: category || "todas",
+          limit: 0,
+          note: "userId inválido - retornando array vazio",
+        },
+      });
+    }
+
+    //validar se a categoria está no enum
+    if (category) {
+      //validar se categoria está no enum
+      const validCategories = [
+        "combate",
+        "perícias",
+        "magia",
+        "item",
+        "outros",
+      ];
+      if (validCategories.includes(category)) {
+        filter.category = category;
       } else {
         return NextResponse.json(
-          { error: "ID de usuário inválido" },
+          {
+            error:
+              "Categoria inválida. Use: combate, perícias, magia, item, outros",
+          },
           { status: 400 }
         );
       }
     }
-    console.log("📋 Filtro aplicado:", filter);
+
+    //configura limite (padrão 50, máximo 100)
+    const limit = limitParam
+      ? Math.min(Math.max(parseInt(limitParam), 1), 100) //entre 1 e 100
+      : 50;
+
+    //configura ordenação
+    const sortField = sortParam.startsWith("-")
+      ? sortParam.slice(1)
+      : sortParam;
+    const sortDirection: SortOrder = sortParam.startsWith("-") ? -1 : 1;
+    const sortOptions: Record<string, SortOrder> = {
+      [sortField]: sortDirection,
+    };
+
+    //valida campos permitidos para ordenação
+    const allowedSortFields = ["order", "createdAt", "updatedAt", "name"];
+    if (!allowedSortFields.includes(sortField)) {
+      return NextResponse.json(
+        {
+          error: `Campo de ordenação inválido. Use: ${allowedSortFields.join(
+            ", "
+          )}`,
+        },
+        { status: 400 }
+      );
+    }
 
     await dbConnect();
-    //usa a ID do usuário como filtro. Pega todos os rolamentos com esse ID
-    const lastRoll = await QuickRoll.find(filter)
-      .limit(10)
-      .sort({ createdAt: -1 }); //mais recente
 
-    console.log(`✅ Retornando ${lastRoll.length} rolamentos`);
+    //usa a ID do usuário como filtro. Pega todos os rolamentos com esse ID
+    const quickRolls = await QuickRoll.find(filter)
+      .sort(sortOptions)
+      .limit(limit);
+
+    console.log(`✅ Retornando ${quickRolls.length} rolamentos`);
 
     return NextResponse.json({
       success: true,
-      lastRoll,
-      count: lastRoll.length,
-      filter: filter.userId ? `userId: ${filter.userId}` : "todos",
+      data: quickRolls,
+      count: quickRolls.length,
+      filters: {
+        userId,
+        category: category || "todas",
+        limit: quickRolls.length,
+      },
     });
   } catch (error: any) {
-    console.error("❌ Erro na APIrest:", error.message);
+    console.error("❌ Erro GET /quick-rolls:", error.message);
     return NextResponse.json(
       {
         error: "Internal server error",
