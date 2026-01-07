@@ -67,12 +67,15 @@ export function useQuickRolls(userId: string) {
       color?: string;
       category?: string;
     }): Promise<void> => {
-      setLoading(true);
-      setError(null);
-
       try {
         // 1. Validar userId
+        if (!userId) {
+          setError("userId é obrigatório");
+          return;
+        }
         // 2. Iniciar loading
+        setLoading(true);
+        setError(null);
         // 3. Fazer requisição POST
         // 4. Verificar resposta
         // 5. Se sucesso, atualizar lista
