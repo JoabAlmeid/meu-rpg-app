@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import dbConnect from "@/lib/connectMongo";
 import { NextRequest, NextResponse } from "next/server";
-import QuickRoll from "../../../../models/QuickRoll";
+import QuickRoll from "../../../models/QuickRoll";
 import mongoose, { SortOrder } from "mongoose";
 
 export async function GET(request: NextRequest) {

@@ -2,7 +2,7 @@
 "use client"; // IMPORTANTE: Client Component
 
 import { useEffect } from "react";
-import { useQuickRolls } from "../../../hooks/useQuickRolls";
+import { useQuickRolls } from "../../hooks/useQuickRolls";
 
 export default function TesteHookPage() {
   // Use um userId VÁLIDO do seu banco

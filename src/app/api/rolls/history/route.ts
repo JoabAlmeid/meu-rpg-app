@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import dbConnect from "@/lib/connectMongo";
-import Rolamento from "../../../../../models/Roll";
+import Rolamento from "../../../../models/Roll";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(request: NextRequest) {

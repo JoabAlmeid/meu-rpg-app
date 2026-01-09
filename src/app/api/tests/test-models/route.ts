@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextResponse } from "next/server";
 import dbConnect from "@/lib/connectMongo";
-import User from "../../../../../models/User";
-import Rolamento from "../../../../../models/Roll";
-import QuickRoll from "../../../../../models/QuickRoll";
+import User from "../../../../models/User";
+import Rolamento from "../../../../models/Roll";
+import QuickRoll from "../../../../models/QuickRoll";
 
 export async function GET() {
   try {
