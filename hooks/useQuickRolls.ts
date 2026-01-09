@@ -67,29 +67,48 @@ export function useQuickRolls(userId: string) {
       color?: string;
       category?: string;
     }): Promise<void> => {
+      // 1. Validar userId
+      if (!userId) {
+        setError("userId é obrigatório");
+        return;
+      }
+      // 2. Iniciar loading
+      setLoading(true);
+      setError(null);
+
       try {
-        // 1. Validar userId
-        if (!userId) {
-          setError("userId é obrigatório");
-          return;
-        }
-        // 2. Iniciar loading
-        setLoading(true);
-        setError(null);
         // 3. Fazer requisição POST
+        const response = await fetch(`/api/quick-rolls?userId=${userId}`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          //vem do frontend
+          body: JSON.stringify({
+            name: newQuickRoll.name,
+            notation: newQuickRoll.notation,
+            color: newQuickRoll.color || "blue", // valor padrão
+            category: newQuickRoll.category || "outros", // valor padrão
+          }),
+        });
+
         // 4. Verificar resposta
+        if (!response.ok) {
+          throw new Error("Falha ao criar QuickRoll");
+        }
+
         // 5. Se sucesso, atualizar lista
-        // 6. Tratar erros
-        // 7. Finalizar loading
+        await fetchQuickRolls();
       } catch (err: any) {
-        // Tratar erro
+        //se der erro, atualizar estado de error
+        setError(err.message);
+
+        console.error("Erro ao criar QuickRoll:", err);
       } finally {
         setLoading(false);
       }
     },
-    [
-      /* Quais dependências? */
-    ]
+    [userId, fetchQuickRolls] //dependências
   );
 
   //TODO: implementar updateQuickRoll
@@ -113,5 +132,6 @@ export function useQuickRolls(userId: string) {
     loading,
     error,
     fetchQuickRolls,
+    createQuickRoll,
   };
 }

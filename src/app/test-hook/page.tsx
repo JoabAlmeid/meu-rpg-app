@@ -9,12 +9,22 @@ export default function TesteHookPage() {
   const userId = "507f1f77bcf86cd799439011"; // ← TROQUE por um ID real seu!
 
   // Usando o hook
-  const { quickRolls, loading, error, fetchQuickRolls } = useQuickRolls(userId);
+  const { quickRolls, loading, error, fetchQuickRolls, createQuickRoll } =
+    useQuickRolls(userId);
 
   // Buscar quando a página carrega
   useEffect(() => {
     fetchQuickRolls();
   }, [fetchQuickRolls]); // Dependência: refetch se fetchQuickRolls mudar
+
+  const handleCreateTest = async () => {
+    await createQuickRoll({
+      name: "Teste " + Date.now(), // Nome único
+      notation: "2d6+3",
+      color: "green",
+      category: "combate",
+    });
+  };
 
   // Estados de loading/error
   if (loading) {
@@ -53,6 +63,13 @@ export default function TesteHookPage() {
           className="px-4 py-2 bg-green-500 text-white rounded mt-2"
         >
           Recarregar
+        </button>
+        <button
+          onClick={handleCreateTest}
+          disabled={loading}
+          className="px-4 py-2 bg-green-500 text-white rounded disabled:opacity-50"
+        >
+          {loading ? "Criando..." : "Criar QuickRoll de Teste"}
         </button>
       </div>
 
