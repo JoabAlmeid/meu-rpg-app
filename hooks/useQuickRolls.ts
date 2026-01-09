@@ -120,12 +120,47 @@ export function useQuickRolls(userId: string) {
   };
 
   //TODO: implementar deleteQuickRoll
-  const deleteQuickRoll = async (id: string) => {
-    // Similar, mas:
-    // - URL: `/api/quick-rolls/${id}?userId=${userId}`
-    // - Método: DELETE
-    // - Após deletar, buscar novamente
-  };
+  const deleteQuickRoll = useCallback(
+    async (id: string): Promise<void> => {
+      // 1. Validar ids
+      if (!userId) {
+        setError("userId é obrigatório");
+        return;
+      }
+      // 2. Pedir confirmação (opcional, mas recomendado)
+      if (!window.confirm("Tem certeza que deseja excluir este QuickRoll?")) {
+        return; // Usuário cancelou
+      }
+      // 3. Iniciar loading
+      setLoading(true);
+      setError(null); //limpa erros anteriores
+
+      try {
+        // 4. Fazer requisição DELETE
+        const response = await fetch(
+          `/api/quick-rolls/${id}?userId=${userId}`,
+          {
+            method: "DELETE",
+          }
+        );
+        // 5. Verificar resposta
+        if (!response.ok) {
+          throw new Error("Falha ao deletar QuickRoll");
+        }
+
+        // 6. Se sucesso, atualizar lista
+        await fetchQuickRolls();
+      } catch (err: any) {
+        //se der erro, atualizar estado de error
+        setError(err.message);
+
+        console.error("Erro ao deletar QuickRoll:", err);
+      } finally {
+        setLoading(false);
+      }
+    },
+    [userId, fetchQuickRolls] //dependências
+  );
 
   return {
     quickRolls,
@@ -133,5 +168,6 @@ export function useQuickRolls(userId: string) {
     error,
     fetchQuickRolls,
     createQuickRoll,
+    deleteQuickRoll,
   };
 }

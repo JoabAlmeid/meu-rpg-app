@@ -9,8 +9,14 @@ export default function TesteHookPage() {
   const userId = "507f1f77bcf86cd799439011"; // ← TROQUE por um ID real seu!
 
   // Usando o hook
-  const { quickRolls, loading, error, fetchQuickRolls, createQuickRoll } =
-    useQuickRolls(userId);
+  const {
+    quickRolls,
+    loading,
+    error,
+    fetchQuickRolls,
+    createQuickRoll,
+    deleteQuickRoll,
+  } = useQuickRolls(userId);
 
   // Buscar quando a página carrega
   useEffect(() => {
@@ -24,6 +30,15 @@ export default function TesteHookPage() {
       color: "green",
       category: "combate",
     });
+  };
+
+  const handleDeleteTest = async () => {
+    if (quickRolls.length > 0) {
+      // Deleta o primeiro QuickRoll da lista
+      await deleteQuickRoll(quickRolls[0]._id);
+    } else {
+      alert("Nenhum QuickRoll para deletar!");
+    }
   };
 
   // Estados de loading/error
@@ -72,6 +87,13 @@ export default function TesteHookPage() {
           {loading ? "Criando..." : "Criar QuickRoll de Teste"}
         </button>
       </div>
+      <button
+        onClick={handleDeleteTest}
+        disabled={loading || quickRolls.length === 0}
+        className="px-4 py-2 bg-red-500 text-white rounded disabled:opacity-50"
+      >
+        {loading ? "Deletando..." : "Deletar Primeiro QuickRoll"}
+      </button>
 
       {quickRolls.length === 0 ? (
         <p>Nenhum QuickRoll encontrado.</p>
