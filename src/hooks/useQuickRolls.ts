@@ -92,7 +92,7 @@ export function useQuickRolls(userId: string) {
           }),
         });
 
-        // 4. Verificar resposta
+        // 4. Verifica resposta
         if (!response.ok) {
           throw new Error("Falha ao criar QuickRoll");
         }
