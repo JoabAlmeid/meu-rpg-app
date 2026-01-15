@@ -2,6 +2,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import QuickRollManager from "@/components/dice/QuickRollManager";
 
 export default function Home() {
   const [resultado, setResultado] = useState<number[]>([]);
@@ -231,6 +232,7 @@ export default function Home() {
         <p>
           Notação: {quantidadeDados}d{lados}
         </p>
+        <QuickRollManager userId="507f1f77bcf86cd799439011" />
         <div>
           <h2>Histórico (últimas 10 rolagens)</h2>
           {carregandoHistorico ? (
