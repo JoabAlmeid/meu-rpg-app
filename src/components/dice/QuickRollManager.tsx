@@ -5,7 +5,7 @@ import { useQuickRolls } from "@/hooks/useQuickRolls";
 import { useEffect } from "react";
 
 export default function QuickRollManager({ userId }: { userId: string }) {
-  //adicionar editar e criar quickroll. O deletar já está funcionando
+  //adicionar, editar, e criar quickroll. O deletar já está funcionando
   const { quickRolls, loading, error, deleteQuickRoll, fetchQuickRolls } =
     useQuickRolls(userId);
 
