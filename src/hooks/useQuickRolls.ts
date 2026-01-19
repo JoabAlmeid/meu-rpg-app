@@ -87,7 +87,7 @@ export function useQuickRolls(userId: string) {
           body: JSON.stringify({
             name: newQuickRoll.name,
             notation: newQuickRoll.notation,
-            color: newQuickRoll.color || "blue", // valor padrão
+            color: newQuickRoll.color || "azul", // valor padrão
             category: newQuickRoll.category || "outros", // valor padrão
           }),
         });
@@ -108,7 +108,7 @@ export function useQuickRolls(userId: string) {
         setLoading(false);
       }
     },
-    [userId, fetchQuickRolls] //dependências
+    [userId, fetchQuickRolls], //dependências
   );
 
   //TODO: implementar updateQuickRoll
@@ -141,7 +141,7 @@ export function useQuickRolls(userId: string) {
           `/api/quick-rolls/${id}?userId=${userId}`,
           {
             method: "DELETE",
-          }
+          },
         );
         // 5. Verificar resposta
         if (!response.ok) {
@@ -159,7 +159,7 @@ export function useQuickRolls(userId: string) {
         setLoading(false);
       }
     },
-    [userId, fetchQuickRolls] //dependências
+    [userId, fetchQuickRolls], //dependências
   );
 
   return {

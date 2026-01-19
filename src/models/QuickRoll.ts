@@ -29,8 +29,8 @@ const QuickRollSchema = new Schema<IQuickRoll>(
     },
     color: {
       type: String,
-      default: "blue",
-      enum: ["red", "blue", "green", "yellow", "purple", "gray"],
+      default: "azul",
+      enum: ["vermelho", "azul", "verde", "amarelo", "roxo", "cinza"],
     },
     order: {
       type: Number,
@@ -45,7 +45,7 @@ const QuickRollSchema = new Schema<IQuickRoll>(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 //índice para buscas rápidas por usuário
