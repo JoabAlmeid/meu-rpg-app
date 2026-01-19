@@ -5,7 +5,7 @@ import { useQuickRolls } from "@/hooks/useQuickRolls";
 import { useEffect } from "react";
 
 export default function QuickRollManager({ userId }: { userId: string }) {
-  //adicionar, editar, e criar quickroll. O deletar já está funcionando
+  //adicionar o editar e criar quickroll. O deletar já está funcionando
   const { quickRolls, loading, error, deleteQuickRoll, fetchQuickRolls } =
     useQuickRolls(userId);
 
@@ -24,7 +24,7 @@ export default function QuickRollManager({ userId }: { userId: string }) {
       {quickRolls.length === 0 ? (
         <p>Nenhum QuickRoll criado ainda.</p>
       ) : (
-        <ul style={{ listStyle: "none", padding: 0 }}>
+        <ul style={{ listStyle: "none", padding: 5 }}>
           {quickRolls.map((qr) => (
             <li
               key={qr._id}
@@ -69,7 +69,7 @@ export default function QuickRollManager({ userId }: { userId: string }) {
 
       <button
         onClick={() => console.log("Abrir formulário de criação")}
-        style={{ marginTop: "20px", padding: "10px 20px" }}
+        style={{ marginTop: "10px", padding: "10px 20px" }}
       >
         + Adicionar Novo QuickRoll
       </button>
