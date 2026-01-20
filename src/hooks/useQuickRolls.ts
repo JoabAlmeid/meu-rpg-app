@@ -112,12 +112,26 @@ export function useQuickRolls(userId: string) {
   );
 
   //TODO: implementar updateQuickRoll
-  const updateQuickRoll = async (id: string, updates: Partial<QuickRoll>) => {
-    // Similar, mas:
-    // - URL: `/api/quick-rolls/${id}?userId=${userId}`
-    // - Método: PUT
-    // - Body: JSON.stringify(updates)
-  };
+  const updateQuickRoll = useCallback(
+    async (
+      id: string,
+      updates: {
+        name?: string;
+        notation?: string;
+        color?: string;
+        category?: string;
+      },
+    ): Promise<void> => {
+      // TODO: Implementar
+      // 1. Validar userId e id
+      // 2. setLoading(true)
+      // 3. Fazer requisição PUT
+      // 4. Verificar response.ok
+      // 5. Atualizar lista (fetchQuickRolls ou atualizar localmente)
+      // 6. Tratar erros
+    },
+    [userId, fetchQuickRolls],
+  );
 
   //TODO: implementar deleteQuickRoll
   const deleteQuickRoll = useCallback(
